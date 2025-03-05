@@ -3,11 +3,13 @@ import { PDFDocument } from 'pdf-lib';
 import toast from 'react-hot-toast';
 import FileDropzone from '../components/FileDropzone';
 import { motion } from 'framer-motion';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const Edit = () => {
   const [file, setFile] = useState(null);
   const [pageToRemove, setPageToRemove] = useState('');
   const [totalPages, setTotalPages] = useState(0);
+  const { trackPDFUpload, trackPDFEdit, trackError } = useAnalytics();
 
   const handleDrop = async ([newFile]) => {
     if (newFile) {
@@ -16,7 +18,9 @@ const Edit = () => {
         const pdf = await PDFDocument.load(arrayBuffer);
         setTotalPages(pdf.getPageCount());
         setFile(newFile);
+        trackPDFUpload(1, newFile.size);
       } catch (error) {
+        trackError(error.message, 'edit_load');
         toast.error('Error loading PDF');
         console.error(error);
       }
@@ -25,12 +29,14 @@ const Edit = () => {
 
   const handleRemovePage = async () => {
     if (!file || !pageToRemove) {
+      trackError('invalid_input', 'edit_remove_page');
       toast.error('Please select a file and specify a page number');
       return;
     }
 
     const pageNum = parseInt(pageToRemove);
     if (pageNum < 1 || pageNum > totalPages) {
+      trackError('invalid_page_number', 'edit_remove_page');
       toast.error('Invalid page number');
       return;
     }
@@ -50,8 +56,10 @@ const Edit = () => {
       link.click();
       URL.revokeObjectURL(url);
       
+      trackPDFEdit('remove_page', true);
       toast.success('Page removed successfully!');
     } catch (error) {
+      trackError(error.message, 'edit_remove_page');
       toast.error('Error removing page');
       console.error(error);
     }

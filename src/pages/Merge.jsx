@@ -3,16 +3,21 @@ import { PDFDocument } from 'pdf-lib';
 import toast from 'react-hot-toast';
 import FileDropzone from '../components/FileDropzone';
 import { motion } from 'framer-motion';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const Merge = () => {
   const [files, setFiles] = useState([]);
+  const { trackPDFUpload, trackPDFMerge, trackError } = useAnalytics();
 
   const handleDrop = (newFiles) => {
+    const totalSize = newFiles.reduce((sum, file) => sum + file.size, 0);
+    trackPDFUpload(newFiles.length, totalSize);
     setFiles((prev) => [...prev, ...newFiles]);
   };
 
   const handleMerge = async () => {
     if (files.length < 2) {
+      trackError('insufficient_files', 'merge');
       toast.error('Please select at least 2 PDF files to merge');
       return;
     }
@@ -37,8 +42,10 @@ const Merge = () => {
       link.click();
       
       URL.revokeObjectURL(url);
+      trackPDFMerge(files.length, true);
       toast.success('PDFs merged successfully!');
     } catch (error) {
+      trackError(error.message, 'merge');
       toast.error('Error merging PDFs');
       console.error(error);
     }

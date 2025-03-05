@@ -3,11 +3,13 @@ import { PDFDocument } from 'pdf-lib';
 import toast from 'react-hot-toast';
 import FileDropzone from '../components/FileDropzone';
 import { motion } from 'framer-motion';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const Split = () => {
   const [file, setFile] = useState(null);
   const [pageRange, setPageRange] = useState('');
   const [totalPages, setTotalPages] = useState(0);
+  const { trackPDFUpload, trackPDFSplit, trackError } = useAnalytics();
 
   const handleDrop = async ([newFile]) => {
     if (newFile) {
@@ -16,7 +18,9 @@ const Split = () => {
         const pdf = await PDFDocument.load(arrayBuffer);
         setTotalPages(pdf.getPageCount());
         setFile(newFile);
+        trackPDFUpload(1, newFile.size);
       } catch (error) {
+        trackError(error.message, 'split_load');
         toast.error('Error loading PDF');
         console.error(error);
       }
@@ -25,6 +29,7 @@ const Split = () => {
 
   const handleSplit = async () => {
     if (!file) {
+      trackError('no_file_selected', 'split');
       toast.error('Please select a PDF file');
       return;
     }
@@ -57,8 +62,10 @@ const Split = () => {
         URL.revokeObjectURL(url);
       }
       
+      trackPDFSplit(pageRange, true);
       toast.success('PDF split successfully!');
     } catch (error) {
+      trackError(error.message, 'split');
       toast.error('Error splitting PDF');
       console.error(error);
     }
