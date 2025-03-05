@@ -18,7 +18,8 @@
     "react-pdf": "^7.7.0",
     "pdf-lib": "^1.17.1",
     "react-dropzone": "^14.2.3",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "react-share": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

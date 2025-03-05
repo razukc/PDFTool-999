@@ -13,20 +13,17 @@ export const useAnalytics = () => {
   return {
     trackPDFUpload: (fileCount, totalSize) => 
       trackEvent('pdf_upload', { fileCount, totalSize }),
-    
-    trackPDFMerge: (fileCount, success) =>
+    trackPDFMerge: (fileCount, success) => 
       trackEvent('pdf_merge', { fileCount, success }),
-    
-    trackPDFSplit: (pageRanges, success) =>
+    trackPDFSplit: (pageRanges, success) => 
       trackEvent('pdf_split', { pageRanges, success }),
-    
-    trackPDFEdit: (operation, success) =>
+    trackPDFEdit: (operation, success) => 
       trackEvent('pdf_edit', { operation, success }),
-    
-    trackPageView: (page) =>
+    trackPageView: (page) => 
       trackEvent('page_view', { page }),
-    
-    trackError: (error, operation) =>
-      trackEvent('error', { error, operation })
+    trackError: (error, operation) => 
+      trackEvent('error', { error, operation }),
+    trackShare: (platform) => 
+      trackEvent('pdf_share', { platform })
   };
 };
