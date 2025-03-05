@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
 import toast from 'react-hot-toast';
 import FileDropzone from '../components/FileDropzone';
+import ShareDialog from '../components/ShareDialog';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { FaShare } from 'react-icons/fa';
 
 const Merge = () => {
   const [files, setFiles] = useState([]);
+  const [mergedFileUrl, setMergedFileUrl] = useState('');
+  const [mergedFileName, setMergedFileName] = useState('');
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const { trackPDFUpload, trackPDFMerge, trackError } = useAnalytics();
 
   const handleDrop = (newFiles) => {
@@ -36,12 +41,8 @@ const Merge = () => {
       const blob = new Blob([mergedPdfFile], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'merged.pdf';
-      link.click();
-      
-      URL.revokeObjectURL(url);
+      setMergedFileUrl(url);
+      setMergedFileName('merged.pdf');
       trackPDFMerge(files.length, true);
       toast.success('PDFs merged successfully!');
     } catch (error) {
@@ -54,7 +55,6 @@ const Merge = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-6">Merge PDFs</h2>
-      
       <FileDropzone onDrop={handleDrop} multiple={true} />
       
       {files.length > 0 && (
@@ -73,18 +73,38 @@ const Merge = () => {
               </li>
             ))}
           </ul>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleMerge}
-            className="mt-6 w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold
-              hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-          >
-            Merge PDFs
-          </motion.button>
+
+          <div className="mt-6 flex space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleMerge}
+              className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+            >
+              Merge PDFs
+            </motion.button>
+
+            {mergedFileUrl && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsShareOpen(true)}
+                className="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center"
+              >
+                <FaShare className="mr-2" />
+                Share
+              </motion.button>
+            )}
+          </div>
         </div>
       )}
+
+      <ShareDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        fileUrl={mergedFileUrl}
+        fileName={mergedFileName}
+      />
     </div>
   );
 };
